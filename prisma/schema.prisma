@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Booking {
+  id            String    @id @default(cuid())
+  code          String    @unique // nội dung chuyển khoản, vd "XX" + 6 ký tự
+  customerName  String
+  customerPhone String
+  customerEmail String
+  roomId        String
+  bookingDate   String // YYYY-MM-DD
+  startHour     Int
+  endHour       Int
+  amount        Int // VND — tính server-side, không tin client
+  note          String?
+  status        String    @default("pending") // pending | paid | expired
+  paidTxId      String?
+  paidAt        DateTime?
+  emailSentAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([code])
+  @@index([createdAt])
+}
