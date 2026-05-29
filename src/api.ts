@@ -4,6 +4,18 @@ import { prisma } from "./lib/prisma";
 import { computeAmount } from "./lib/pricing";
 import { randomBookingCode } from "./lib/code";
 
+/** Link QR động VietQR — nhúng sẵn số tiền + nội dung (= mã booking). */
+function buildVietqrUrl(amount: number, code: string): string {
+  const bank = process.env.VIETQR_QR_BANK || "VIB";
+  const acc = process.env.VIETQR_QR_ACCOUNT || "BLC2604010816";
+  const tpl = process.env.VIETQR_QR_TEMPLATE || "compact";
+  const u = new URL(`https://img.vietqr.io/image/${bank}-${acc}-${tpl}.png`);
+  u.searchParams.set("amount", String(amount));
+  u.searchParams.set("addInfo", code);
+  u.searchParams.set("accountName", process.env.VIETQR_QR_ACCOUNT_NAME || "TRANG THI PHUONG THAO");
+  return u.toString();
+}
+
 export function startApiServer(): void {
   const app = express();
   app.use(express.json());
@@ -74,6 +86,7 @@ export function startApiServer(): void {
         amount: booking.amount,
         status: booking.status,
         transferNote: booking.code, // khách nhập đúng nội dung này khi CK
+        qrUrl: buildVietqrUrl(booking.amount, booking.code),
       });
     } catch (e) {
       console.error("[api] POST /api/bookings:", e instanceof Error ? e.message : e);
