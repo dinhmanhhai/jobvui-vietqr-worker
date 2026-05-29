@@ -94,6 +94,22 @@ export function startApiServer(): void {
     }
   });
 
+  // Giờ đã đặt (busy) cho 1 phòng + ngày — query DB. PHẢI đặt trước /:code.
+  app.get("/api/bookings/busy", async (req: Request, res: Response) => {
+    const roomId = String(req.query.roomId || "");
+    const date = String(req.query.date || "");
+    if (!roomId || !date) return res.status(400).json({ error: "missing roomId/date" });
+    const rows = await prisma.booking.findMany({
+      where: { roomId, bookingDate: date, status: { in: ["pending", "paid"] } },
+      select: { startHour: true, endHour: true },
+    });
+    const set = new Set<number>();
+    for (const r of rows) {
+      for (let h = r.startHour; h < r.endHour; h++) set.add(h);
+    }
+    return res.json({ busy: [...set].sort((a, b) => a - b) });
+  });
+
   // Poll trạng thái (frontend dùng để hiện "đã nhận thanh toán")
   app.get("/api/bookings/:code", async (req: Request, res: Response) => {
     const bk = await prisma.booking.findUnique({
