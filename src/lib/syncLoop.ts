@@ -54,7 +54,7 @@ function txMatchesBooking(
 
 async function runTick(): Promise<void> {
   const env = readEnv();
-  if (!env.bankId || !env.queryValue) return;
+  if (!env.bankId) return; // queryValue rỗng = lấy tất cả giao dịch của TK
 
   // 1) hết hạn các booking pending quá lâu
   const expireBefore = new Date(Date.now() - env.expireHours * 3600 * 1000);
@@ -141,8 +141,8 @@ export function startTransferSyncLoop(): void {
     console.warn("[vietqr-worker] DATABASE_URL thiếu → loop tắt.");
     return;
   }
-  if (!env.bankId || !env.queryValue) {
-    console.warn("[vietqr-worker] VIETQR_BANK_ID / VIETQR_QUERY_VALUE thiếu → loop tắt.");
+  if (!env.bankId) {
+    console.warn("[vietqr-worker] VIETQR_BANK_ID thiếu → loop tắt.");
     return;
   }
   if (!hasLoginCredentials()) {
