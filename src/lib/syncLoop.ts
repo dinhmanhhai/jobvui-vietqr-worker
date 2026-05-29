@@ -111,6 +111,7 @@ async function runTick(): Promise<void> {
         const ok = await sendBookingConfirmed({
           customerEmail: full.customerEmail,
           customerName: full.customerName,
+          customerPhone: full.customerPhone,
           roomId: full.roomId,
           bookingDate: full.bookingDate,
           startHour: full.startHour,
